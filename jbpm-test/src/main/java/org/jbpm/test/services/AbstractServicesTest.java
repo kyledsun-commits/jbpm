@@ -135,7 +135,7 @@ public abstract class AbstractServicesTest extends AbstractBaseTest {
             extraResources = new HashMap<>();
         }
         if (customDescriptor != null) {
-            extraResources.put("src/main/resources/" + DeploymentDescriptor.META_INF_LOCATION, customDescriptor.toXml());
+            extraResources.put("src/main/resources/META-INF/kie-deployment-descriptor.xml", buildDeploymentDescriptorXml(strategy));;
         }
 
         for (String resource : resources) {
@@ -158,7 +158,38 @@ public abstract class AbstractServicesTest extends AbstractBaseTest {
 
         return (InternalKieModule) kieBuilder.getKieModule();
     }
-
+     private String buildDeploymentDescriptorXml(RuntimeStrategy runtimeStrategy) {
+        StringBuilder xml = new StringBuilder();
+        xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
+        xml.append("<deployment-descriptor xsi:schemaLocation=\"http://www.jboss.org/jbpm deployment-descriptor.xsd\" ")
+                .append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n");
+        xml.append("  <persistence-unit>").append(puName).append("</persistence-unit>\n");
+        xml.append("  <audit-persistence-unit>").append(puName).append("</audit-persistence-unit>\n");
+        xml.append("  <audit-mode>JPA</audit-mode>\n");
+        xml.append("  <persistence-mode>JPA</persistence-mode>\n");
+        xml.append("  <runtime-strategy>").append(runtimeStrategy.name()).append("</runtime-strategy>\n");
+        xml.append("  <marshalling-strategies/>\n");
+        xml.append("  <event-listeners>\n");
+        xml.append("    <event-listener>\n");
+        xml.append("      <resolver>mvel</resolver>\n");
+        xml.append("      <identifier>org.jbpm.kie.test.util.CountDownListenerFactory.get(\"securityTest\", \"timer\", 1)</identifier>\n");
+        xml.append("      <parameters/>\n");
+        xml.append("    </event-listener>\n");
+        xml.append("  </event-listeners>\n");
+        xml.append("  <task-event-listeners/>\n");
+        xml.append("  <globals/>\n");
+        xml.append("  <work-item-handlers/>\n");
+        xml.append("  <environment-entries/>\n");
+        xml.append("  <configurations/>\n");
+        xml.append("  <required-roles>\n");
+        xml.append("    <required-role>view:managers</required-role>\n");
+        xml.append("    <required-role>execute:employees</required-role>\n");
+        xml.append("  </required-roles>\n");
+        xml.append("  <remoteable-classes/>\n");
+        xml.append("  <limit-serialization-classes>false</limit-serialization-classes>\n");
+        xml.append("</deployment-descriptor>");
+        return xml.toString();
+    }
     protected abstract DeploymentDescriptor createDeploymentDescriptor();
 
     protected KieFileSystem createKieFileSystemWithKProject(KieServices ks) {
